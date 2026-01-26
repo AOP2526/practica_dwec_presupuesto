@@ -133,14 +133,85 @@ function calcularBalance() {
     return presupuesto - calcularTotalGastos();
 }
 
+function filtrarGastos(opciones) {
+    if (!opciones) {
+        opciones = {};
+    }
+    
+    return gastos.filter(function(gasto) {
+        if (opciones.fechaDesde) {
+            const fechaDesdeTimestamp = Date.parse(opciones.fechaDesde);
+            if (!isNaN(fechaDesdeTimestamp) && gasto.fecha < fechaDesdeTimestamp) {
+                return false;
+            }
+        }
+        
+        if (opciones.fechaHasta) {
+            const fechaHastaTimestamp = Date.parse(opciones.fechaHasta);
+            if (!isNaN(fechaHastaTimestamp) && gasto.fecha > fechaHastaTimestamp) {
+                return false;
+            }
+        }
+        
+        if (opciones.valorMinimo !== undefined && gasto.valor < opciones.valorMinimo) {
+            return false;
+        }
+        
+        if (opciones.valorMaximo !== undefined && gasto.valor > opciones.valorMaximo) {
+            return false;
+        }
+        if (opciones.descripcionContiene) {
+            const descripcionGasto = gasto.descripcion.toLowerCase();
+            const descripcionBuscar = opciones.descripcionContiene.toLowerCase();
+            if (descripcionGasto.indexOf(descripcionBuscar) === -1) {
+                return false;
+            }
+        }
+    
+        if (opciones.etiquetasTiene && Array.isArray(opciones.etiquetasTiene) && opciones.etiquetasTiene.length > 0) {
+            let tieneAlgunaEtiqueta = false;
+            for (let i = 0; i < opciones.etiquetasTiene.length; i++) {
+                const etiquetaBuscar = opciones.etiquetasTiene[i].toLowerCase();
+                for (let j = 0; j < gasto.etiquetas.length; j++) {
+                    if (gasto.etiquetas[j].toLowerCase() === etiquetaBuscar) {
+                        tieneAlgunaEtiqueta = true;
+                        break;
+                    }
+                }
+                if (tieneAlgunaEtiqueta) break;
+            }
+            if (!tieneAlgunaEtiqueta) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+}
+
 function transformarListadoEtiquetas(lista){
-    return lista.match(/[a-z0-9]+/gi);
+    if (!lista || lista.trim() === '') {
+        return [];
+    }
+    const separador = /[,\.;:\s]+/;
+    const partes = lista.split(separador);
+    const resultado = [];
+    for (let i = 0; i < partes.length; i++) {
+        const etiqueta = partes[i].trim();
+        if (etiqueta !== '') {
+            resultado.push(etiqueta);
+        }
+    }
+    return resultado;
 }
 
 
 // NO MODIFICAR A PARTIR DE AQUÍ: exportación de funciones y objetos creados para poder ejecutar los tests.
 // Las funciones y objetos deben tener los nombres que se indican en el enunciado
 // Si al obtener el código de una práctica se genera un conflicto, por favor incluye todo el código que aparece aquí debajo
+// Alias para mantener compatibilidad
+const crearGasto = CrearGasto;
+
 export   {
     actualizarPresupuesto,
     mostrarPresupuesto,
@@ -149,5 +220,8 @@ export   {
     borrarGasto,
     calcularTotalGastos,
     calcularBalance,
-    CrearGasto
+    CrearGasto,
+    crearGasto,
+    filtrarGastos,
+    transformarListadoEtiquetas
 }

@@ -124,7 +124,7 @@ function nuevoGastoWeb() {
   const valor = parseFloat(valorStr)
   if (isNaN(valor) || valor < 0) return
   const etiquetas = recogerEtiquetas(etiquetasTexto)
-  const gasto = gestionPresupuesto.crearGasto(descripcion, valor, fecha)
+  const gasto = new gestionPresupuesto.crearGasto(descripcion, valor, fecha)
   for (let i = 0; i < etiquetas.length; i++) gasto.anyadirEtiquetas(etiquetas[i])
   gestionPresupuesto.anyadirGasto(gasto)
   repintar()
@@ -160,7 +160,7 @@ function nuevoGastoWebFormulario(evento) {
     if (isNaN(valor) || valor < 0) return
 
     const etiquetas = recogerEtiquetas(form.etiquetas ? form.etiquetas.value : '')
-    const gasto = gestionPresupuesto.crearGasto(descripcion, valor, fecha)
+    const gasto = new gestionPresupuesto.crearGasto(descripcion, valor, fecha)
     for (let i = 0; i < etiquetas.length; i++) gasto.anyadirEtiquetas(etiquetas[i])
     gestionPresupuesto.anyadirGasto(gasto)
     repintar()
@@ -305,29 +305,67 @@ export function iniciar() {
   const btnAnyadirFormulario = document.getElementById('anyadirgasto-formulario')
   if (btnAnyadirFormulario) btnAnyadirFormulario.addEventListener('click', nuevoGastoWebFormulario)
 
+  const formFiltrado = document.getElementById("formulario-filtrado");
+  if (formFiltrado) {
+    formFiltrado.addEventListener("submit", filtrarGastosWeb);
+  }
+
   repintar()
 }
 
-function filtrarGastoWeb(e) {
-  e.preventDefault();
+function filtrarGastosWeb(event) {
+  event.preventDefault();
 
-  let filtro = {};
-  filtro.valorMinimo = e.target["formulario-filtrado-valor-minimo"].value;
-  filtro.valorMaximo = e.target["formulario-filtrado-valor-maximo"].value;
-  filtro.fechaDesde = e.target["formulario-filtrado-fecha-desde"].value;
-  filtro.fechaHasta = e.target["formulario-filtrado-fecha-hasta"].value;
-  filtro.descripcionContiene = e.target["formulario-filtrado-descripcion"].value;
+  const formulario = event.target;
+  const filtro = {};
 
-  if(e.target["formulario-filtrado-etiquetas-tiene"].value){
-    filtro.etiquetasTiene = gestionPresupuesto.transformarListadoEtiquetas(e.target["formulario-filtrado-etiquetas-tiene"].value);
+  const descripcion = document.getElementById("formulario-filtrado-descripcion").value.trim();
+  const valorMinimoStr = document.getElementById("formulario-filtrado-valor-minimo").value.trim();
+  const valorMaximoStr = document.getElementById("formulario-filtrado-valor-maximo").value.trim();
+  const fechaDesde = document.getElementById("formulario-filtrado-fecha-desde").value;
+  const fechaHasta = document.getElementById("formulario-filtrado-fecha-hasta").value;
+  const etiquetasTexto = document.getElementById("formulario-filtrado-etiquetas-tiene").value.trim();
+
+  if (descripcion !== '') {
+    filtro.descripcionContiene = descripcion;
   }
 
-  let lgastos = document.getElementById("listado-gastos-completo");
-  lgastos.innerHTML = "";
-  for(let g of gestionPresupuesto.filtrarGastos(filtro)){
-    mostrarGastoWeb("listado-gastos-completo", g);
+  if (valorMinimoStr !== '') {
+    const valorMinimo = parseFloat(valorMinimoStr);
+    if (!isNaN(valorMinimo)) {
+      filtro.valorMinimo = valorMinimo;
+    }
+  }
+
+  if (valorMaximoStr !== '') {
+    const valorMaximo = parseFloat(valorMaximoStr);
+    if (!isNaN(valorMaximo)) {
+      filtro.valorMaximo = valorMaximo;
+    }
+  }
+
+  if (fechaDesde !== '') {
+    filtro.fechaDesde = fechaDesde;
+  }
+
+  if (fechaHasta !== '') {
+    filtro.fechaHasta = fechaHasta;
+  }
+
+  if (etiquetasTexto !== '') {
+    const etiquetas = gestionPresupuesto.transformarListadoEtiquetas(etiquetasTexto);
+    if (etiquetas.length > 0) {
+      filtro.etiquetasTiene = etiquetas;
+    }
+  }
+
+  const gastosFiltrados = gestionPresupuesto.filtrarGastos(filtro);
+
+  const listadoGastos = document.getElementById("listado-gastos-completo");
+  if (listadoGastos) {
+    listadoGastos.innerHTML = "";
+    for (let i = 0; i < gastosFiltrados.length; i++) {
+      mostrarGastoWeb("listado-gastos-completo", gastosFiltrados[i]);
+    }
   }
 }
-
-let formFiltrado = document.getElementById("formulario-filtrado");
-formFiltrado.addEventListener("submit", filtrarGastoWeb);
