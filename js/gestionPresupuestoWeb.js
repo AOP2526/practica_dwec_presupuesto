@@ -307,3 +307,27 @@ export function iniciar() {
 
   repintar()
 }
+
+function filtrarGastoWeb(e) {
+  e.preventDefault();
+
+  let filtro = {};
+  filtro.valorMinimo = e.target["formulario-filtrado-valor-minimo"].value;
+  filtro.valorMaximo = e.target["formulario-filtrado-valor-maximo"].value;
+  filtro.fechaDesde = e.target["formulario-filtrado-fecha-desde"].value;
+  filtro.fechaHasta = e.target["formulario-filtrado-fecha-hasta"].value;
+  filtro.descripcionContiene = e.target["formulario-filtrado-descripcion"].value;
+
+  if(e.target["formulario-filtrado-etiquetas-tiene"].value){
+    filtro.etiquetasTiene = gestionPresupuesto.transformarListadoEtiquetas(e.target["formulario-filtrado-etiquetas-tiene"].value);
+  }
+
+  let lgastos = document.getElementById("listado-gastos-completo");
+  lgastos.innerHTML = "";
+  for(let g of gestionPresupuesto.filtrarGastos(filtro)){
+    mostrarGastoWeb("listado-gastos-completo", g);
+  }
+}
+
+let formFiltrado = document.getElementById("formulario-filtrado");
+formFiltrado.addEventListener("submit", filtrarGastoWeb);
