@@ -140,7 +140,6 @@ function calcularBalance() {
 export   {
     actualizarPresupuesto,
     mostrarPresupuesto,
-    actualizarPresupuesto,
     listarGastos,
     anyadirGasto,
     borrarGasto,
