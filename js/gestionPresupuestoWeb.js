@@ -310,6 +310,16 @@ export function iniciar() {
     formFiltrado.addEventListener("submit", filtrarGastosWeb);
   }
 
+  const btnGuardarGastos = document.getElementById("guardar-gastos");
+  if (btnGuardarGastos) {
+    btnGuardarGastos.addEventListener("click", guardarGastosWeb);
+  }
+
+  const btnCargarGastos = document.getElementById("cargar-gastos");
+  if (btnCargarGastos) {
+    btnCargarGastos.addEventListener("click", cargarGastosWeb);
+  }
+
   repintar()
 }
 
@@ -368,4 +378,18 @@ function filtrarGastosWeb(event) {
       mostrarGastoWeb("listado-gastos-completo", gastosFiltrados[i]);
     }
   }
+}
+
+function guardarGastosWeb(e){
+  localStorage.setItem("GestorGastosDWEC", JSON.stringify(gestionPresupuesto.listarGastos()));
+}
+
+function cargarGastosWeb(e) {
+  let datos = localStorage.getItem("GestorGastosDWEC");
+  if (datos) {
+    gestionPresupuesto.cargarGastos(JSON.parse(datos));
+  } else {
+    gestionPresupuesto.cargarGastos([]);
+  }
+  repintar();
 }
