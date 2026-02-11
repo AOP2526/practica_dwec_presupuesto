@@ -85,7 +85,7 @@ export function mostrarGastoWeb(idElementoLista, gasto) {
 
   lista.appendChild(contenedor)
 
-  
+
 }
 
 export function repintar() {
@@ -539,6 +539,56 @@ function cargarGastosWeb(e) {
   }
   repintar();
 }
+
+function mostrarGastosAgrupadosWeb(periodo, agrup, idElemento) {
+  let divP = document.getElementById(idElemento);
+  divP.innerHTML = "";
+
+  divP.style.width = "33%";
+    divP.style.display = "inline-block";
+
+    let canvas = document.createElement("canvas");
+
+    let unit = "day"; // valor por defecto
+    switch (periodo) {
+        case "anyo":
+            unit = "year";
+            break;
+        case "mes":
+            unit = "month";
+            break;
+        case "dia":
+            unit = "day";
+            break;
+    }
+
+    new Chart(canvas.getContext("2d"), {
+        type: 'bar',
+        data: {
+            datasets: [{
+                label: `Gastos por ${periodo}`,
+                backgroundColor: "#555555",
+                data: agrup
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: unit
+                    }
+                },
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    divP.append(canvas);
+}
+
 
 async function cargarGastosApi() {
 
