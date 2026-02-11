@@ -75,6 +75,14 @@ export function mostrarGastoWeb(idElementoLista, gasto) {
   contenedor.appendChild(btnEditarFormulario)
 
   lista.appendChild(contenedor)
+
+  const btnBorrarApi = document.createElement('button');
+    btnBorrarApi.type = 'button';
+    btnBorrarApi.className = 'gasto-borrar-api';
+    btnBorrarApi.textContent = 'Borrar (API)';
+    divGasto.append(btnBorrarApi);
+
+    divGasto.dataset.id = gasto.gastoId || gasto.id;
 }
 
 export function repintar() {
@@ -181,6 +189,51 @@ function nuevoGastoWebFormulario(evento) {
   const contenedor = document.getElementById('controlesprincipales')
   if (contenedor) contenedor.appendChild(fragmento)
   else if (boton) boton.disabled = false
+
+  formulario.querySelector('.gasto-enviar-api').addEventListener('click', async function(e) {
+
+    e.preventDefault();
+
+    const usuario = document.getElementById('nombre_usuario').value.trim();
+    if (!usuario) return alert('Escribe el nombre de usuario API primero');
+
+    const datos = {
+        descripcion: formulario.descripcion.value.trim(),
+        fecha:        formulario.fecha.value,
+        valor:        Number(formulario.valor.value),
+        etiquetas:    formulario.etiquetas?.value.trim().split(',').map(t => t.trim()).filter(Boolean) || []
+    };
+
+    if (!datos.descripcion || !datos.valor || datos.valor <= 0) {
+        alert('La descripción y el valor (positivo) son obligatorios');
+        return;
+    }
+
+    const url = `https://suhhtqjccd.execute-api.eu-west-1.amazonaws.com/latest/${usuario}`;
+
+    try {
+        const respuesta = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datos)
+        });
+
+        if (!respuesta.ok) {
+            throw new Error(`Error al crear → ${respuesta.status}`);
+        }
+
+        alert('Gasto creado correctamente en la API');
+        cerrarFormulario();
+        formulario.reset();
+        cargarGastosApi();
+        }
+    catch (err) {
+        console.error(err);
+        alert('Error al enviar el gasto a la API:\n' + err.message);
+    }
+});
 }
 
 function EditarHandle() {}
