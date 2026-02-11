@@ -102,6 +102,15 @@ export function repintar() {
   for (let i = 0; i < gastos.length; i++) {
     mostrarGastoWeb('listado-gastos-completo', gastos[i])
   }
+
+  let agrupDia  = gestionPresupuesto.agruparGastos("dia");
+    mostrarGastosAgrupadosWeb("dia",  agrupDia,  "agrupacion-dia");
+
+    let agrupMes  = gestionPresupuesto.agruparGastos("mes");
+    mostrarGastosAgrupadosWeb("mes",  agrupMes,  "agrupacion-mes");
+
+    let agrupAnyo = gestionPresupuesto.agruparGastos("anyo");
+    mostrarGastosAgrupadosWeb("anyo", agrupAnyo, "agrupacion-anyo");
 }
 
 function actualizarPresupuestoWeb() {
