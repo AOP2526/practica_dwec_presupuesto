@@ -84,6 +84,8 @@ export function mostrarGastoWeb(idElementoLista, gasto) {
   contenedor.appendChild(btnBorrarApi)
 
   lista.appendChild(contenedor)
+
+  
 }
 
 export function repintar() {
