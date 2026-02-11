@@ -394,3 +394,33 @@ function cargarGastosWeb(e) {
   repintar();
 }
 
+async function cargarGastosApi() {
+
+    const nombreUsuario = document.getElementById('nombre_usuario').value.trim();
+
+    if (!nombreUsuario) {
+        alert('Debes escribir tu nombre de usuario primero (sin espacios ni caracteres raros)');
+        return;
+    }
+
+    const url = `https://suhhtqjccd.execute-api.eu-west-1.amazonaws.com/latest/${nombreUsuario}`;
+
+    try {
+        const respuesta = await fetch(url);
+
+        if (!respuesta.ok) {
+            throw new Error(`Error al consultar la API → ${respuesta.status} ${respuesta.statusText}`);
+        }
+
+        const gastosArray = await respuesta.json();
+        gestionPresupuesto.cargarGastos(gastosArray);
+        repintar();
+
+        console.info(`Cargados ${gastosArray.length} gastos desde la API para el usuario ${nombreUsuario}`);
+    }
+    catch (error) {
+        console.error("Error al cargar gastos desde API:", error);
+        alert("No se han podido cargar los gastos");
+        }
+}
+document.getElementById('cargar-gastos-api').addEventListener('click', cargarGastosApi);
