@@ -303,6 +303,39 @@ EditarHandleFormulario.prototype.handleEvent = function (evento) {
     const contenedor = document.getElementById('controlesprincipales')
     if (contenedor) contenedor.appendChild(fragmento)
   }
+formulario.querySelector('.gasto-enviar-api').addEventListener('click', async function(e) {
+
+    e.preventDefault();
+
+    const usuario = document.getElementById('nombre_usuario').value.trim();
+    if (!usuario) return alert('Nombre de usuario requerido');
+
+    const datos = {
+        descripcion: formulario.descripcion.value.trim(),
+        fecha:        formulario.fecha.value,
+        valor:        Number(formulario.valor.value),
+        etiquetas:    formulario.etiquetas?.value.trim().split(',').map(t => t.trim()).filter(Boolean) || []
+    };
+
+    const url = `https://suhhtqjccd.execute-api.eu-west-1.amazonaws.com/latest/${usuario}/${gasto.gastoId || gasto.id}`;
+
+    try {
+        const resp = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+
+        if (!resp.ok) throw new Error(`Error PUT → ${resp.status}`);
+
+        alert('Gasto actualizado en la API correctamente');
+        cerrarFormulario();
+        cargarGastosApi();
+    }
+    catch (err) {
+        alert('Error al actualizar el gasto:\n' + err.message);
+    }
+});
 }
 
 function EditarFormularioSubmitHandle() {}
