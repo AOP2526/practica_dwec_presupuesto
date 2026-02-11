@@ -74,15 +74,16 @@ export function mostrarGastoWeb(idElementoLista, gasto) {
   btnEditarFormulario.addEventListener('click', manejadorEditarFormulario)
   contenedor.appendChild(btnEditarFormulario)
 
+  const btnBorrarApi = document.createElement('button')
+  btnBorrarApi.type = 'button'
+  btnBorrarApi.className = 'gasto-borrar-api'
+  btnBorrarApi.textContent = 'Borrar (API)'
+  const manejadorBorrarApi = new BorrarApiHandle()
+  manejadorBorrarApi.gasto = gasto
+  btnBorrarApi.addEventListener('click', manejadorBorrarApi)
+  contenedor.appendChild(btnBorrarApi)
+
   lista.appendChild(contenedor)
-
-  const btnBorrarApi = document.createElement('button');
-    btnBorrarApi.type = 'button';
-    btnBorrarApi.className = 'gasto-borrar-api';
-    btnBorrarApi.textContent = 'Borrar (API)';
-    divGasto.append(btnBorrarApi);
-
-    divGasto.dataset.id = gasto.gastoId || gasto.id;
 }
 
 export function repintar() {
@@ -178,7 +179,7 @@ function nuevoGastoWebFormulario(evento) {
     if (botonFormulario) botonFormulario.disabled = false
   })
 
-  const btnCancelar = formulario.querySelector('button.cancelar')
+  const btnCancelar = formulario.querySelector('button.gasto-cancelar')
   if (btnCancelar) {
     const manejadorCancelar = new CancelarFormularioHandle()
     manejadorCancelar.formulario = formulario
@@ -192,48 +193,53 @@ function nuevoGastoWebFormulario(evento) {
 
   formulario.querySelector('.gasto-enviar-api').addEventListener('click', async function(e) {
 
-    e.preventDefault();
+    e.preventDefault()
 
-    const usuario = document.getElementById('nombre_usuario').value.trim();
-    if (!usuario) return alert('Escribe el nombre de usuario API primero');
+    const usuario = document.getElementById('nombre_usuario').value.trim()
+    if (!usuario) {
+      alert('Escribe el nombre de usuario API primero')
+      return
+    }
 
     const datos = {
-        descripcion: formulario.descripcion.value.trim(),
-        fecha:        formulario.fecha.value,
-        valor:        Number(formulario.valor.value),
-        etiquetas:    formulario.etiquetas?.value.trim().split(',').map(t => t.trim()).filter(Boolean) || []
-    };
+      descripcion: formulario.descripcion.value.trim(),
+      fecha: formulario.fecha.value,
+      valor: Number(formulario.valor.value),
+      etiquetas: (formulario.etiquetas ? formulario.etiquetas.value : '')
+        .trim()
+        .split(',')
+        .map(function (t) { return t.trim() })
+        .filter(function (t) { return t !== '' })
+    }
 
     if (!datos.descripcion || !datos.valor || datos.valor <= 0) {
-        alert('La descripción y el valor (positivo) son obligatorios');
-        return;
+      alert('La descripción y el valor (positivo) son obligatorios')
+      return
     }
 
-    const url = `https://suhhtqjccd.execute-api.eu-west-1.amazonaws.com/latest/${usuario}`;
+    const url = 'https://suhhtqjccd.execute-api.eu-west-1.amazonaws.com/latest/' + usuario
 
     try {
-        const respuesta = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(datos)
-        });
+      const respuesta = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(datos)
+      })
 
-        if (!respuesta.ok) {
-            throw new Error(`Error al crear → ${respuesta.status}`);
-        }
+      if (!respuesta.ok) {
+        alert('Error al crear el gasto en la API')
+        return
+      }
 
-        alert('Gasto creado correctamente en la API');
-        cerrarFormulario();
-        formulario.reset();
-        cargarGastosApi();
-        }
-    catch (err) {
-        console.error(err);
-        alert('Error al enviar el gasto a la API:\n' + err.message);
+      alert('Gasto creado correctamente en la API')
+      cargarGastosApi()
+    } catch (err) {
+      console.error(err)
+      alert('Error al enviar el gasto a la API:\n' + err.message)
     }
-});
+  })
 }
 
 function EditarHandle() {}
@@ -303,39 +309,58 @@ EditarHandleFormulario.prototype.handleEvent = function (evento) {
     const contenedor = document.getElementById('controlesprincipales')
     if (contenedor) contenedor.appendChild(fragmento)
   }
-formulario.querySelector('.gasto-enviar-api').addEventListener('click', async function(e) {
+  const gasto = this.gasto
+  const btnEnviarApi = formulario.querySelector('.gasto-enviar-api')
+  if (btnEnviarApi && gasto) {
+    btnEnviarApi.addEventListener('click', async function (e) {
 
     e.preventDefault();
 
-    const usuario = document.getElementById('nombre_usuario').value.trim();
-    if (!usuario) return alert('Nombre de usuario requerido');
+      const usuario = document.getElementById('nombre_usuario').value.trim()
+      if (!usuario) {
+        alert('Nombre de usuario requerido')
+        return
+      }
 
-    const datos = {
+      const datos = {
         descripcion: formulario.descripcion.value.trim(),
-        fecha:        formulario.fecha.value,
-        valor:        Number(formulario.valor.value),
-        etiquetas:    formulario.etiquetas?.value.trim().split(',').map(t => t.trim()).filter(Boolean) || []
-    };
+        fecha: formulario.fecha.value,
+        valor: Number(formulario.valor.value),
+        etiquetas: (formulario.etiquetas ? formulario.etiquetas.value : '')
+          .trim()
+          .split(',')
+          .map(function (t) { return t.trim() })
+          .filter(function (t) { return t !== '' })
+      }
 
-    const url = `https://suhhtqjccd.execute-api.eu-west-1.amazonaws.com/latest/${usuario}/${gasto.gastoId || gasto.id}`;
+      const idGastoApi = gasto.gastoId || gasto.id
+      if (!idGastoApi) {
+        alert('No se puede actualizar en la API: el gasto no tiene id')
+        return
+      }
 
-    try {
+      const url = 'https://suhhtqjccd.execute-api.eu-west-1.amazonaws.com/latest/' +
+        usuario + '/' + idGastoApi
+
+      try {
         const resp = await fetch(url, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datos)
-        });
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(datos)
+        })
 
-        if (!resp.ok) throw new Error(`Error PUT → ${resp.status}`);
+        if (!resp.ok) {
+          alert('Error al actualizar el gasto en la API')
+          return
+        }
 
-        alert('Gasto actualizado en la API correctamente');
-        cerrarFormulario();
-        cargarGastosApi();
-    }
-    catch (err) {
-        alert('Error al actualizar el gasto:\n' + err.message);
-    }
-});
+        alert('Gasto actualizado en la API correctamente')
+        cargarGastosApi()
+      } catch (err) {
+        alert('Error al actualizar el gasto:\n' + err.message)
+      }
+    })
+  }
 }
 
 function EditarFormularioSubmitHandle() {}
@@ -366,6 +391,39 @@ function BorrarHandle() {}
 BorrarHandle.prototype.handleEvent = function () {
   gestionPresupuesto.borrarGasto(this.gasto.id)
   repintar()
+}
+
+function BorrarApiHandle() {}
+BorrarApiHandle.prototype.handleEvent = async function () {
+  const nombreUsuarioInput = document.getElementById('nombre_usuario')
+  const nombreUsuario = nombreUsuarioInput ? nombreUsuarioInput.value.trim() : ''
+
+  if (!nombreUsuario) {
+    alert('Debes escribir tu nombre de usuario primero (sin espacios ni caracteres raros)')
+    return
+  }
+
+  const idGastoApi = this.gasto && (this.gasto.gastoId || this.gasto.id)
+  if (!idGastoApi) {
+    alert('No se puede borrar en la API: este gasto no tiene id')
+    return
+  }
+
+  const url = 'https://suhhtqjccd.execute-api.eu-west-1.amazonaws.com/latest/' +
+    nombreUsuario + '/' + idGastoApi
+
+  try {
+    const resp = await fetch(url, { method: 'DELETE' })
+    if (!resp.ok) {
+      alert('Error al borrar el gasto en la API')
+      return
+    }
+    alert('Gasto borrado en la API correctamente')
+    cargarGastosApi()
+  } catch (error) {
+    console.error('Error al borrar gasto en API', error)
+    alert('No se ha podido borrar el gasto en la API')
+  }
 }
 
 function BorrarEtiquetasHandle() {}
