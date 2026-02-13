@@ -550,52 +550,55 @@ function cargarGastosWeb(e) {
 }
 
 function mostrarGastosAgrupadosWeb(periodo, agrup, idElemento) {
-  let divP = document.getElementById(idElemento);
-  divP.innerHTML = "";
+  let divP = document.getElementById(idElemento)
+  divP.innerHTML = ""
 
-  divP.style.width = "33%";
-    divP.style.display = "inline-block";
+  divP.style.width = "33%"
+  divP.style.display = "inline-block"
 
-    let canvas = document.createElement("canvas");
+  let canvas = document.createElement("canvas")
 
-    let unit = "day"; // valor por defecto
-    switch (periodo) {
-        case "anyo":
-            unit = "year";
-            break;
-        case "mes":
-            unit = "month";
-            break;
-        case "dia":
-            unit = "day";
-            break;
-    }
+  let unit = ""
+  switch (periodo) {
+    case "anyo":
+      unit = "year"
+      break
+    case "mes":
+      unit = "month"
+      break
+    case "dia":
+      unit = "day"
+      break
+    default:
+      unit = "day"
+      break
+  }
 
-    new Chart(canvas.getContext("2d"), {
-        type: 'bar',
-        data: {
-            datasets: [{
-                label: `Gastos por ${periodo}`,
-                backgroundColor: "#555555",
-                data: agrup
-            }]
+  new Chart(canvas.getContext("2d"), {
+    type: 'bar',
+    data: {
+      datasets: [{
+        label: `Gastos por ${periodo}`,
+        backgroundColor: "#555555",
+        data: agrup
+      }]
+    },
+    options: {
+      scales: {
+        x: {
+          type: 'time',
+          time: {
+            unit: unit
+          }
         },
-        options: {
-            scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: unit
-                    }
-                },
-                y: {
-                    beginAtZero: true
-                }
-            }
+        y: {
+          beginAtZero: true
         }
-    });
+      }
+    }
+  })
 
-    divP.append(canvas);
+  divP.append(canvas)
 }
 
 

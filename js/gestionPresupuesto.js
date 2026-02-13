@@ -211,7 +211,52 @@ function cargarGastos(gastosAlmacenamiento) {
         gastos.push(gastoRehidratado)
     }
 }
-    
+
+function agruparGastos(periodo) {
+    const resultado = [];
+    const mapa = {};
+
+    for (let i = 0; i < gastos.length; i++) {
+        const g = gastos[i];
+        const fecha = new Date(g.fecha);
+        let clave = "";
+
+        if (periodo === "mes") {
+            const anyo = fecha.getFullYear();
+            let mes = fecha.getMonth() + 1;
+            if (mes < 10) {
+                mes = "0" + mes;
+            }
+            clave = anyo + "-" + mes;
+        } else if (periodo === "anyo") {
+            clave = String(fecha.getFullYear());
+        } else {
+            const anyo = fecha.getFullYear();
+            let mes = fecha.getMonth() + 1;
+            let dia = fecha.getDate();
+            if (mes < 10) {
+                mes = "0" + mes;
+            }
+            if (dia < 10) {
+                dia = "0" + dia;
+            }
+            clave = anyo + "-" + mes + "-" + dia;
+        }
+
+        if (!mapa[clave]) {
+            mapa[clave] = 0;
+        }
+        mapa[clave] += g.valor;
+    }
+
+    const clavesOrdenadas = Object.keys(mapa).sort();
+    for (let i = 0; i < clavesOrdenadas.length; i++) {
+        const k = clavesOrdenadas[i];
+        resultado.push({ x: k, y: mapa[k] });
+    }
+
+    return resultado;
+}
 
 
 // NO MODIFICAR A PARTIR DE AQUÍ: exportación de funciones y objetos creados para poder ejecutar los tests.
@@ -232,7 +277,8 @@ export   {
     crearGasto,
     filtrarGastos,
     transformarListadoEtiquetas,
-    cargarGastos
+    cargarGastos,
+    agruparGastos
 }
 
 
